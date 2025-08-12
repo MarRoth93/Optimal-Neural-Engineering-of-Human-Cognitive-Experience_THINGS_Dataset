@@ -17,7 +17,7 @@ eval "$(conda shell.bash hook)"
 conda activate brain-diffuser
 echo "Python: $(which python)"
 
-MASK="/home/rothermm/THINGS/01_scripts/sub-01_visualcortex_mask.nii.gz"
+MASK="/home/rothermm/THINGS/02_data/masks/subj01/sub-01_visualcortex_mask.nii.gz"
 BETAS_GLOB="/home/rothermm/THINGS/02_data/derivatives/ICA-betas/sub-01/**/**/*.nii.gz"   # <<< EDIT ME
 OUT_DIR="/home/rothermm/THINGS/01_scripts/out_sub-01_X"                                   # or your brain-diffuser data dir
 EVENTS_ROOT="/home/rothermm/THINGS/02_data"
