@@ -22,39 +22,55 @@ import torch
 from PIL import Image
 from tqdm import tqdm
 
+
 def read_lines(p: Path) -> List[str]:
-    with open(p, "r") as f:
+    with open(p, "r", encoding="utf-8") as f:
         return [ln.strip() for ln in f if ln.strip()]
+
 
 def ensure_dir(p: Path) -> Path:
     p.mkdir(parents=True, exist_ok=True)
     return p
 
+
 def save_sidecars(paths: List[str], caps: List[str], prefix: str, out_dir: Path):
     # TSV
     tsv = out_dir / f"{prefix}_captions.tsv"
-    with open(tsv, "w") as f:
+    with open(tsv, "w", encoding="utf-8") as f:
         f.write("image_path\tcaption\n")
         for p, c in zip(paths, caps):
             f.write(f"{p}\t{c}\n")
     # JSONL
     jsonl = out_dir / f"{prefix}_captions.jsonl"
-    with open(jsonl, "w") as f:
+    with open(jsonl, "w", encoding="utf-8") as f:
         for p, c in zip(paths, caps):
             f.write(json.dumps({"image_path": p, "caption": c}, ensure_ascii=False) + "\n")
     # TXT (captions only, aligned with *_image_paths.txt)
     txt = out_dir / f"{prefix}_captions.txt"
-    with open(txt, "w") as f:
+    with open(txt, "w", encoding="utf-8") as f:
         for c in caps:
             f.write(c + "\n")
     print(f"[SAVED] {tsv}\n[SAVED] {jsonl}\n[SAVED] {txt}")
 
+
 def load_image_safe(p: str, size: Optional[int] = None) -> Image.Image:
     img = Image.open(p).convert("RGB")
-    if size:
-        # conservative resize to keep detail but bound memory
+    if size and size > 0:
         img = img.resize((size, size))
     return img
+
+
+def _to_device_cast_floats(d: dict, device: torch.device, float_dtype: torch.dtype) -> dict:
+    """Move tensors to device; cast only floating tensors to float_dtype (leave int/long as-is)."""
+    out = {}
+    for k, v in d.items():
+        if isinstance(v, torch.Tensor):
+            v = v.to(device)
+            if v.is_floating_point():
+                v = v.to(float_dtype)
+        out[k] = v
+    return out
+
 
 def main():
     ap = argparse.ArgumentParser(description="Caption THINGS images (train/test) with BLIP/BLIP-2.")
@@ -63,13 +79,13 @@ def main():
     ap.add_argument("--test_paths",  type=Path, default=None, help="test_image_paths.txt")
     ap.add_argument("--out_dir",     type=Path, default=None, help="Output dir for captions")
     ap.add_argument("--model", type=str, default="Salesforce/blip2-opt-2.7b",
-                  help="HF model: 'Salesforce/blip-image-captioning-large' or 'Salesforce/blip2-opt-2.7b'")
+                    help="HF model: 'Salesforce/blip-image-captioning-large' or 'Salesforce/blip2-opt-2.7b'")
     ap.add_argument("--batch_size", type=int, default=8)
     ap.add_argument("--max_new_tokens", type=int, default=30)
     ap.add_argument("--beam_search", action="store_true", help="Use beam search (slower, often better)")
     ap.add_argument("--num_beams", type=int, default=5)
     ap.add_argument("--prompt", type=str, default=None,
-                    help="Optional prefix prompt for BLIP/BLIP-2 (e.g., 'a detailed photo of')")
+                    help="Optional prompt. Do NOT include '<image>' for BLIP-2.")
     ap.add_argument("--image_size", type=int, default=384,
                     help="Square resize for captioning input (BLIP typical 384). Set 0 to keep native.")
     ap.add_argument("--device", type=str, default=None, help="cuda / cpu (auto if None)")
@@ -93,19 +109,23 @@ def main():
     print("[INFO] Device:", device)
 
     # ---- load model ----
-    # BLIP variants
+    is_blip2 = False
+    blip2_default_prompt = None
+
     if "blip2" in args.model.lower():
         from transformers import AutoProcessor, Blip2ForConditionalGeneration
         processor = AutoProcessor.from_pretrained(args.model, trust_remote_code=True)
         model = Blip2ForConditionalGeneration.from_pretrained(
-            args.model, torch_dtype=torch.float16 if device.type == "cuda" else torch.float32
+            args.model,
+            torch_dtype=torch.float16 if device.type == "cuda" else torch.float32
         ).to(device)
         is_blip2 = True
     else:
         from transformers import BlipProcessor, BlipForConditionalGeneration
         processor = BlipProcessor.from_pretrained(args.model)
         model = BlipForConditionalGeneration.from_pretrained(
-            args.model, torch_dtype=torch.float16 if device.type == "cuda" else torch.float32
+            args.model,
+            torch_dtype=torch.float16 if device.type == "cuda" else torch.float32
         ).to(device)
         is_blip2 = False
 
@@ -117,44 +137,34 @@ def main():
         "repetition_penalty": 1.0,
     }
 
-    def caption_batch(img_paths: List[str]) -> List[str]:
-        images = [load_image_safe(p, size=(args.image_size or None)) for p in img_paths]
-        if is_blip2:
-            # Only pass `text` if user provided one that contains the <image> token.
-            # Otherwise, omit `text` entirely (BLIP-2 handles image-only prompts internally).
-            if args.prompt and "<image>" in args.prompt:
-                inputs = processor(images=images, text=[args.prompt]*len(images), return_tensors="pt")
-            else:
-                inputs = processor(images=images, return_tensors="pt")
-            inputs = {k: v.to(device, dtype=model.dtype) for k, v in inputs.items()}
-        else:
-            if args.prompt is not None:
-                inputs = processor(images=images, text=[args.prompt]*len(images), return_tensors="pt").to(device, dtype=model.dtype)
-            else:
-                inputs = processor(images=images, return_tensors="pt").to(device, dtype=model.dtype)
-        with torch.no_grad(), torch.autocast(device_type=device.type, enabled=(device.type=="cuda")):
-            out = model.generate(**inputs, **gen_kwargs)
-        if is_blip2:
-            captions = processor.batch_decode(out, skip_special_tokens=True)
-        else:
-            captions = [c.strip() for c in processor.decode(out[i], skip_special_tokens=True) for i in range(len(images))]
-            # The above line isn't correct for batch; use this instead:
-        return captions
-
-    # fix BLIP batch decode for non-blip2:
-    def caption_batch_blip(img_paths: List[str]) -> List[str]:
-        images = [load_image_safe(p, size=(args.image_size or None)) for p in img_paths]
-        if args.prompt is not None:
-            inputs = processor(images=images, text=[args.prompt]*len(images), return_tensors="pt").to(device, dtype=model.dtype)
-        else:
-            inputs = processor(images=images, return_tensors="pt").to(device, dtype=model.dtype)
-        with torch.no_grad(), torch.autocast(device_type=device.type, enabled=(device.type=="cuda")):
+    # ---- captioning helpers ----
+    def caption_batch_blip2(img_paths: List[str]) -> List[str]:
+        images = [load_image_safe(p, size=args.image_size) for p in img_paths]
+        # BLIP-2: DO NOT include "<image>" in the prompt; processor inserts image tokens automatically.
+        user_prompt = args.prompt if args.prompt else "Describe this image in one sentence."
+        user_prompt = user_prompt.replace("<image>", "").strip()
+        if not user_prompt:
+            user_prompt = "Describe this image in one sentence."
+        inputs = processor(images=images, text=[user_prompt] * len(images), return_tensors="pt")
+        inputs = _to_device_cast_floats(inputs, device, model.dtype)  # cast only float tensors
+        with torch.no_grad(), torch.autocast(device_type=device.type, enabled=(device.type == "cuda")):
             out = model.generate(**inputs, **gen_kwargs)
         return processor.batch_decode(out, skip_special_tokens=True)
 
-    # choose captioner
-    captioner = caption_batch if is_blip2 else caption_batch_blip
+    def caption_batch_blip(img_paths: List[str]) -> List[str]:
+        images = [load_image_safe(p, size=args.image_size) for p in img_paths]
+        if args.prompt is not None:
+            inputs = processor(images=images, text=[args.prompt] * len(images), return_tensors="pt")
+        else:
+            inputs = processor(images=images, return_tensors="pt")
+        inputs = _to_device_cast_floats(inputs, device, model.dtype)
+        with torch.no_grad(), torch.autocast(device_type=device.type, enabled=(device.type == "cuda")):
+            out = model.generate(**inputs, **gen_kwargs)
+        return processor.batch_decode(out, skip_special_tokens=True)
 
+    captioner = caption_batch_blip2 if is_blip2 else caption_batch_blip
+
+    # ---- runner ----
     def run_split(prefix: str, paths_file: Path):
         img_paths = read_lines(paths_file)
         n = len(img_paths)
@@ -197,6 +207,7 @@ def main():
     # run both splits
     run_split("train", args.train_paths)
     run_split("test",  args.test_paths)
+
 
 if __name__ == "__main__":
     main()
