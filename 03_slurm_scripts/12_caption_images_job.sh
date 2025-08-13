@@ -9,7 +9,13 @@
 #SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/captionTHINGS_s01_%j.out
 #SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/captionTHINGS_s01_%j.err
 
-set -euo pipefail
+set -euo pipefailQuestion: describe
+polar bears, polar bears, polar bears, polar bears, polar bears, polar bears, polar bears, polar bears, polar bears, polar bears,
+the altar of st john the baptist
+
+the altar of st john the baptist
+
+the altar of st john the baptist
 echo "==== Job started on $(hostname) at $(date) ===="
 mkdir -p /home/rothermm/THINGS/01_scripts/logs
 
