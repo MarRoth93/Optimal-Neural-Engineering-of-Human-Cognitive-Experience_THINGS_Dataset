@@ -29,7 +29,8 @@ OUT_DIR="/home/rothermm/THINGS/02_data/captions/subj${SUBJ_PAD}"
 MODEL="Salesforce/blip2-opt-2.7b"
 BATCH=8
 MAXTOK=30
-PROMPT=""   # e.g., "Question: <image> Describe this image in one sentence. Answer:"
+# BLIP-2 prompt WITHOUT "<image>"
+PROMPT="Question: describe this image in one sentence. Answer:"
 
 module purge
 module load miniconda
@@ -53,12 +54,12 @@ CMD=( python -u 12_caption_images.py
   --image_size 384
 )
 
-# Optional prompt (for BLIP-2 include "<image>" if you set one)
+# Optional prompt
 if [[ -n "$PROMPT" ]]; then
   CMD+=( --prompt "$PROMPT" )
 fi
 
-# NOTE: beam search disabled to avoid BLIP-2 batch shape-mismatch bug
+# NOTE: Beam search disabled by default to avoid BLIP-2 batch bug; use batch_size=1 if enabling:
 # CMD+=( --beam_search --num_beams 5 )
 
 echo "Running: ${CMD[*]}"
