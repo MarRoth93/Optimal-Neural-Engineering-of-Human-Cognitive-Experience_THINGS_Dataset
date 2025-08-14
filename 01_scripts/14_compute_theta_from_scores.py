@@ -1,38 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-14_compute_theta_from_scores.py
-
-Compute theta vectors from saved assessor scores:
-  theta = mean_z(top_k%) - mean_z(bottom_k%)
-
-Inputs (defaults for subj01):
-- Assessor score pickles (from your working script):
-    /home/rothermm/THINGS/03_results/assessor_scores/subj01/emonet_scores_sub01.pkl
-    /home/rothermm/THINGS/03_results/assessor_scores/subj01/memnet_scores_sub01.pkl
-  Each pickle: {"original": [..], "decoded": [..]} aligned with test_image order.
-
-- VDVAE features with ground-truth latents:
-    /home/rothermm/THINGS/02_data/extracted_features/subj01/things_vdvae_features_31l.npz
-  (uses array "test_latents")
-
-Outputs:
-- /home/rothermm/THINGS/03_results/thetas/subj01/theta_emonet_decoded_top10_minus_bottom10.npy
-- /home/rothermm/THINGS/03_results/thetas/subj01/theta_memnet_decoded_top10_minus_bottom10.npy
-- A small JSON summary alongside.
-
-Usage:
-python 14_compute_theta_from_scores.py --sub 1
-"""
 
 import os, json, argparse, pickle
 from pathlib import Path
+from typing import Tuple  # <-- Py3.8-compatible
 import numpy as np
 
 def ensure_dir(p: Path) -> Path:
     p.mkdir(parents=True, exist_ok=True); return p
 
-def get_top_bottom_idx(scores: np.ndarray, frac: float) -> tuple[np.ndarray, np.ndarray]:
+def get_top_bottom_idx(scores: np.ndarray, frac: float) -> Tuple[np.ndarray, np.ndarray]:
     """Return indices of top and bottom fractions (at least 1 each)."""
     n = len(scores)
     k = max(1, int(round(n * frac)))
@@ -41,7 +18,7 @@ def get_top_bottom_idx(scores: np.ndarray, frac: float) -> tuple[np.ndarray, np.
     top = order[-k:]
     return top, bottom
 
-def compute_theta(scores: np.ndarray, test_latents: np.ndarray, frac: float) -> dict:
+def compute_theta(scores: np.ndarray, test_latents: np.ndarray, frac: float):
     assert len(scores) == test_latents.shape[0], \
         f"scores ({len(scores)}) and test_latents ({test_latents.shape[0]}) length mismatch"
     top_idx, bot_idx = get_top_bottom_idx(scores, frac)
@@ -82,7 +59,6 @@ def main():
         args.out_dir = Path(f"/home/rothermm/THINGS/03_results/thetas/subj{sp}")
     ensure_dir(args.out_dir)
 
-    # load scores
     emo_pkl = args.scores_dir / f"emonet_scores_sub{sp}.pkl"
     mem_pkl = args.scores_dir / f"memnet_scores_sub{sp}.pkl"
     for p in (emo_pkl, mem_pkl, args.features_npz):
@@ -94,16 +70,14 @@ def main():
     emo_scores = np.asarray(emo[args.which], dtype=float)
     mem_scores = np.asarray(mem[args.which], dtype=float)
 
-    # load latents
     ft = np.load(args.features_npz)
     if "test_latents" not in ft:
         raise KeyError(f"'test_latents' not found in {args.features_npz}")
     Z_test = ft["test_latents"]
-    n_scores = len(emo_scores)
-    if not (len(mem_scores) == n_scores == Z_test.shape[0]):
+
+    if not (len(emo_scores) == len(mem_scores) == Z_test.shape[0]):
         raise ValueError(f"Length mismatch: emonet={len(emo_scores)} memnet={len(mem_scores)} test_latents={Z_test.shape[0]}")
 
-    # compute
     emo_res = compute_theta(emo_scores, Z_test, args.frac)
     mem_res = compute_theta(mem_scores, Z_test, args.frac)
 
@@ -111,20 +85,18 @@ def main():
     theta_mem = mem_res["theta"]
 
     if args.normalize:
-        def norm(v): 
-            n = np.linalg.norm(v) + 1e-12
-            return v / n
-        theta_emo = norm(theta_emo)
-        theta_mem = norm(theta_mem)
+        def l2(x): 
+            n = np.linalg.norm(x) + 1e-12
+            return x / n
+        theta_emo = l2(theta_emo)
+        theta_mem = l2(theta_mem)
 
-    # save
     tag = f"{args.which}_top{int(args.frac*100)}_minus_bottom{int(args.frac*100)}"
     emo_out = args.out_dir / f"theta_emonet_{tag}.npy"
     mem_out = args.out_dir / f"theta_memnet_{tag}.npy"
     np.save(emo_out, theta_emo)
     np.save(mem_out, theta_mem)
 
-    # summary
     summary = {
         "subject": args.sub,
         "which_scores": args.which,
@@ -134,7 +106,7 @@ def main():
         "emonet": {
             "out": str(emo_out),
             "top_mean_score": emo_res["top_mean_score"],
-            "bot_mean_score": emo_res["bot_mean_score"],
+            "bot_mean_score": mem_res["bot_mean_score"],
             "top_idx_sample": emo_res["top_idx"][:10].tolist(),
             "bot_idx_sample": emo_res["bot_idx"][:10].tolist(),
         },
@@ -153,7 +125,6 @@ def main():
     print("  EmoNet theta ->", emo_out)
     print("  MemNet theta ->", mem_out)
     print("  Summary       ->", args.out_dir / f"theta_summary_{tag}.json")
-    
 
 if __name__ == "__main__":
     main()
