@@ -24,6 +24,9 @@ This repository extends [MarRoth93/Optimal-Neural-Engineering-of-Human-Cognitive
 - `10_compute_assessor_scores.py` – Uses EmoNet and MemNet to score original and decoded images, records the score vectors, and produces line and scatter plots summarizing agreement between them.
 - `11_visualize_first_stim_activation.py` – Reconstructs a 3D activation map for the first stimulus using voxel coordinates, writes NIfTI volumes for the activation and mask, and generates orthographic, glass‑brain, and histogram visualizations.
 - `12_caption_images.py` – Batch‑generates captions for train and test image lists with BLIP or BLIP‑2, supports optional prompts and beam search, and writes TSV/JSONL/TXT files aligned with the image order with resume support.
+- `13_plot_test_captions.py` – Plots the first N test images with their BLIP‑2 captions by robustly matching paths and saves a composite figure.
+- `14_compute_theta_from_scores.py` – Contrasts top and bottom fractions of EmoNet and MemNet scores to form theta vectors in latent space and records summary statistics.
+- `15_shift_and_decode_vdvae.py` – Adds scaled theta vectors to predicted latents, decodes them with VDVAE, and writes the resulting shifted reconstructions.
 
 ## Acknowledgments
 
