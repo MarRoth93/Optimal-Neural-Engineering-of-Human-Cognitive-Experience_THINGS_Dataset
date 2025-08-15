@@ -6,8 +6,8 @@
 #SBATCH --mem=128G
 #SBATCH --time=06:00:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/dnnRidgefree_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/dnnRidgefree_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/07b_dnnRidgefree_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/07b_dnnRidgefree_s01_%j.err
 
 set -euo pipefail
 echo "==== Job started on $(hostname) at $(date) ===="
@@ -56,5 +56,5 @@ CMD=( python -u 07b_train_deep_regressor.py
 )
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/dnnRidgefree_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/07b_dnnRidgefree_s01_${SLURM_JOB_ID}.debug.log"
 echo "==== Job finished at $(date) ===="

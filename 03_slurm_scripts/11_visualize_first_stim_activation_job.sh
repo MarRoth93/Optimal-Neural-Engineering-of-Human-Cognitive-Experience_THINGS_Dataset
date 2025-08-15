@@ -6,8 +6,8 @@
 #SBATCH --mem=8G
 #SBATCH --time=00:10:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/vizFirstStim_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/vizFirstStim_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/11_vizFirstStim_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/11_vizFirstStim_s01_%j.err
 
 set -euo pipefail
 echo "==== Job started on $(hostname) at $(date) ===="
@@ -42,5 +42,5 @@ CMD=( python -u 11_visualize_first_stim_activation.py
 )
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/vizFirstStim_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/11_vizFirstStim_s01_${SLURM_JOB_ID}.debug.log"
 echo "==== Job finished at $(date) ===="

@@ -6,8 +6,8 @@
 #SBATCH --mem=4G
 #SBATCH --time=00:10:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/plotCaptions_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/plotCaptions_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/13_plotCaptions_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/13_plotCaptions_s01_%j.err
 
 set -euo pipefail
 echo "==== Job started on $(hostname) at $(date) ===="
@@ -40,6 +40,6 @@ python -u 13_plot_test_captions.py \
   --test_paths "$TEST_PATHS" \
   --captions_jsonl "$CAP_JSONL" \
   --out_png "$OUT_PNG" \
-  --n 5 | tee "/home/rothermm/THINGS/01_scripts/logs/plotCaptions_s01_${SLURM_JOB_ID}.debug.log"
+  --n 5 | tee "/home/rothermm/THINGS/01_scripts/logs/13_plotCaptions_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="

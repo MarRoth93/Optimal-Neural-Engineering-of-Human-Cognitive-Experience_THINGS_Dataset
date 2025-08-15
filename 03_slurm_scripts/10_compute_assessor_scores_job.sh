@@ -6,8 +6,8 @@
 #SBATCH --mem=16G
 #SBATCH --time=00:30:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/vdvaeAssess_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/vdvaeAssess_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess_s01_%j.err
 
 set -euo pipefail
 
@@ -47,7 +47,7 @@ CMD=( python -u 10_compute_assessor_scores.py
 
 # change the run line to this (note 2>&1):
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/vdvaeAssess_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess_s01_${SLURM_JOB_ID}.debug.log"
 
 
 echo "==== Job finished at $(date) ===="

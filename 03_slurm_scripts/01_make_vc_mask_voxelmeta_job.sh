@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=vc_mask_s01
 #SBATCH --ntasks=1
-#SBATCH --output=logs/vc_mask_s01_%j.out
-#SBATCH --error=logs/vc_mask_s01_%j.err
+#SBATCH --output=logs/01_vc_mask_s01_%j.out
+#SBATCH --error=logs/01_vc_mask_s01_%j.err
 #SBATCH --time=00:30:00
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
@@ -31,6 +31,6 @@ DERIV_ROOT="/home/rothermm/THINGS/02_data/derivatives"
 
 # Run the mask creation script
 echo "Running make_vc_mask_voxelmeta.py ..."
-python -u 01_make_vc_mask_voxelmeta.py | tee logs/vc_mask_s01_${SLURM_JOB_ID}.debug.log
+python -u 01_make_vc_mask_voxelmeta.py | tee logs/01_vc_mask_s01_${SLURM_JOB_ID}.debug.log
 
 echo "==== Job finished at $(date) ===="

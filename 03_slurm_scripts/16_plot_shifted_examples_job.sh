@@ -6,8 +6,8 @@
 #SBATCH --mem=4G
 #SBATCH --time=00:10:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/plotShifted_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/plotShifted_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/16_plotShifted_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/16_plotShifted_s01_%j.err
 
 set -euo pipefail
 echo "==== Job started on $(hostname) at $(date) ===="
@@ -49,6 +49,6 @@ CMD=( python -u 16_plot_shifted_examples.py
 )
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/plotShifted_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/16_plotShifted_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="

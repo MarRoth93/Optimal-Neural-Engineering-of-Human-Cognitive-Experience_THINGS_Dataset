@@ -6,8 +6,8 @@
 #SBATCH --mem=32G
 #SBATCH --time=04:00:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/captionTHINGS_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/captionTHINGS_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/12_captionTHINGS_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/12_captionTHINGS_s01_%j.err
 
 set -euo pipefail
 echo "==== Job started on $(hostname) at $(date) ===="
@@ -63,5 +63,5 @@ fi
 # CMD+=( --beam_search --num_beams 5 )
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/captionTHINGS_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/12_captionTHINGS_s01_${SLURM_JOB_ID}.debug.log"
 echo "==== Job finished at $(date) ===="

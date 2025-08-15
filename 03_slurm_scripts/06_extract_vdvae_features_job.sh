@@ -6,8 +6,8 @@
 #SBATCH --time=08:00:00
 #SBATCH --partition=normal
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/vdvae_feats_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/vdvae_feats_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/06_vdvae_feats_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/06_vdvae_feats_s01_%j.err
 
 echo "==== Job started on $(hostname) at $(date) ===="
 
@@ -45,6 +45,6 @@ CMD=( python -u 06_extract_vdvae_features.py
 )
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/vdvae_feats_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/06_vdvae_feats_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="

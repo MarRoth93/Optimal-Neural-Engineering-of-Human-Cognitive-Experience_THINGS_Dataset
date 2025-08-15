@@ -6,8 +6,8 @@
 #SBATCH --mem=8G
 #SBATCH --time=00:10:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/thetaFromScores_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/thetaFromScores_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/14_thetaFromScores_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/14_thetaFromScores_s01_%j.err
 
 set -euo pipefail
 echo "==== Job started on $(hostname) at $(date) ===="
@@ -42,6 +42,6 @@ python -u 14_compute_theta_from_scores.py \
   --which decoded \
   --frac 0.10 \
   --normalize \
-  | tee "/home/rothermm/THINGS/01_scripts/logs/thetaFromScores_s01_${SLURM_JOB_ID}.debug.log"
+  | tee "/home/rothermm/THINGS/01_scripts/logs/14_thetaFromScores_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="

@@ -6,8 +6,8 @@
 #SBATCH --time=00:05:00
 #SBATCH --partition=normal
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/mapPaths_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/mapPaths_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/05_mapPaths_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/05_mapPaths_s01_%j.err
 
 set -euo pipefail
 

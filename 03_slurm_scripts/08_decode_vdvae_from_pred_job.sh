@@ -6,8 +6,8 @@
 #SBATCH --mem=32G
 #SBATCH --time=04:00:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/vdvaeDecode_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/vdvaeDecode_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/08_vdvaeDecode_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/08_vdvaeDecode_s01_%j.err
 
 set -euo pipefail
 
@@ -58,7 +58,7 @@ CMD=( python -u 08_decode_vdvae_from_pred.py
 
 # change the run line to merge stderr into stdout before tee
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/vdvaeDecode_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/08_vdvaeDecode_s01_${SLURM_JOB_ID}.debug.log"
 
 
 echo "==== Job finished at $(date) ===="

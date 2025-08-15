@@ -6,8 +6,8 @@
 #SBATCH --mem=32G
 #SBATCH --time=02:00:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/vdvaeShift_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/vdvaeShift_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/15_vdvaeShift_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/15_vdvaeShift_s01_%j.err
 
 set -euo pipefail
 echo "==== Job started on $(hostname) at $(date) ===="

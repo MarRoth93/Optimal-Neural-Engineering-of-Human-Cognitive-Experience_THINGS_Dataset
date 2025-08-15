@@ -6,8 +6,8 @@
 #SBATCH --mem=32G
 #SBATCH --time=02:00:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/vdvaeRidge_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/vdvaeRidge_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge_s01_%j.err
 
 set -euo pipefail
 
@@ -61,6 +61,6 @@ CMD=( python -u 07_regress_brain_to_vdvae.py
 )
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/vdvaeRidge_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="

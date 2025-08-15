@@ -6,8 +6,8 @@
 #SBATCH --time=01:00:00
 #SBATCH --partition=normal
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/thingsH5_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/thingsH5_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/03_thingsH5_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/03_thingsH5_s01_%j.err
 
 # ===== Debug header =====
 echo "==== Job started on $(hostname) at $(date) ===="
@@ -45,6 +45,6 @@ if [[ -n "$ZSCORE_FRAC" ]]; then
 fi
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/thingsH5_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/03_thingsH5_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="
