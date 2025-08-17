@@ -44,7 +44,7 @@ def main():
     ap.add_argument("--img_size", type=int, default=256, help="Tile size in pixels")
     ap.add_argument("--tile", type=int, default=None, help="Alias of --img_size")
     ap.add_argument("--alphas", type=float, nargs="+",
-                    default=[-4, -3, -2, 0, 2, 3, 4],
+                    default=[-4, -3, -2, -1, -0.5, 0, 0.5, 1, 2, 3, 4],
                     help="Alpha values shown left→right")
     args = ap.parse_args()
 

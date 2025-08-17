@@ -46,7 +46,8 @@ if args.out_dir is None:
     args.out_dir = Path(f"/home/rothermm/THINGS/03_results/vdvae/subj{sub_pad}")
 
 alpha_tag = (f"{int(args.alpha):d}" if float(args.alpha).is_integer() else f"{args.alpha}").replace(".", "p")
-pred_latents_path = args.pred_dir / f"things_vdvae_pred_sub{sub_pad}_31l_alpha{alpha_tag}.npy"
+# pred_latents_path = args.pred_dir / f"things_vdvae_pred_sub{sub_pad}_31l_alpha{alpha_tag}.npy"
+pred_latents_path = args.pred_dir / f"things_vdvae_pred_sub01_31l_cvblock_pca_pca800_cv5_a3to6x30.npy"
 ref_latent_path   = args.feat_dir / "ref_latents.npz"
 
 print("Pred path:", pred_latents_path)

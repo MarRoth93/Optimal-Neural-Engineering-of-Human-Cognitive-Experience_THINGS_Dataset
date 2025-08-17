@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=thingsSplit_s01
+#SBATCH --job-name=thingsSplit800_s01
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=8G
@@ -9,6 +9,7 @@
 #SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/04b_thingsSplit_s01_%j.out
 #SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/04b_thingsSplit_s01_%j.err
 
+set -euo pipefail
 echo "==== Job started on $(hostname) at $(date) ===="
 module purge
 module load miniconda
@@ -21,19 +22,19 @@ mkdir -p /home/rothermm/THINGS/01_scripts/logs
 # -------- Paths --------
 SCRIPTS_DIR="/home/rothermm/THINGS/01_scripts"
 
-# (1) Split helper (your 04b is a split script that expects --out_tsv, etc.)
-SPLIT_PY="${SCRIPTS_DIR}/04b_split_and_average_things_800.py"
+# (1) Split helper (PIN original 100, then fill to 800)
+SPLIT_PY="${SCRIPTS_DIR}/make_split_800.py"
 
-# (2) Main split+average script (the one you posted first)
+# (2) Main split+average script
 MAIN_PY="${SCRIPTS_DIR}/04_split_and_average_things.py"
 
-# (3) Checker
+# (3) Optional checker (only run if present)
 CHECK_PY="${SCRIPTS_DIR}/04c_check_split_and_outputs.py"
 
 # -------- Subject-specific IO --------
 X_PATH="/home/rothermm/THINGS/02_data/preprocessed_data/subj01/X.npy"
 STIM_TSV_IN="/home/rothermm/THINGS/02_data/derivatives/ICA-betas/sub-01/voxel-metadata/sub-01_task-things_stimulus-metadata.tsv"
-OUTDIR="/home/rothermm/THINGS/02_data/preprocessed_data/subj01"
+OUTDIR="/home/rothermm/THINGS/02_data/preprocessed_data/subj01/800split"
 
 # -------- Split config --------
 IDCOL="stimulus"
@@ -43,8 +44,8 @@ SEED="42"
 AVGTRAIN=""        # set to "1" to also average train in MAIN_PY
 
 # Derived output metadata path (same folder as input, with suffix)
-BASENAME="$(basename "$STIM_TSV_IN")"                     # sub-01_task-things_stimulus-metadata.tsv
-STEM="${BASENAME%.*}"
+BASENAME="$(basename "$STIM_TSV_IN")"            # sub-01_task-things_stimulus-metadata.tsv
+STEM="${BASENAME%.*}"                            # sub-01_task-things_stimulus-metadata
 STIM_TSV_OUT="$(dirname "$STIM_TSV_IN")/${STEM}_split${N_TEST}.tsv"
 
 echo "Split helper : $SPLIT_PY"
@@ -58,7 +59,7 @@ echo "ID column    : $IDCOL"
 echo "N_TEST       : $N_TEST (strategy=$STRATEGY, seed=$SEED)"
 echo "AVGTRAIN     : ${AVGTRAIN:-no}"
 
-# ------------ STEP 1: Create split (exactly 800 unique test images) ------------
+# ------------ STEP 1: Create split (pin original test + add extras) ------------
 CMD1=( python -u "$SPLIT_PY"
   --stimulus_tsv "$STIM_TSV_IN"
   --out_tsv      "$STIM_TSV_OUT"
@@ -68,7 +69,7 @@ CMD1=( python -u "$SPLIT_PY"
   --n_test       "$N_TEST"
 )
 echo "Running (split): ${CMD1[*]}"
-"${CMD1[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/thingsSplit_s01_${SLURM_JOB_ID}.split.log"
+"${CMD1[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/thingsSplit800_s01_${SLURM_JOB_ID}.split.log"
 
 # ------------ STEP 2: Split + average with the main script ---------------------
 mkdir -p "$OUTDIR"
@@ -82,17 +83,21 @@ if [[ -n "$AVGTRAIN" ]]; then
   CMD2+=( --avg_train )
 fi
 echo "Running (main): ${CMD2[*]}"
-"${CMD2[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/thingsSplit_s01_${SLURM_JOB_ID}.main.log"
+"${CMD2[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/thingsSplit800_s01_${SLURM_JOB_ID}.main.log"
 
-# ------------ STEP 3: Sanity check --------------------------------------------
-CMD3=( python -u "$CHECK_PY"
-  --stimulus_tsv "$STIM_TSV_OUT"
-  --out_dir      "$OUTDIR"
-  --id_col       "$IDCOL"
-  --n_test       "$N_TEST"
-  --x_path       "$X_PATH"
-)
-echo "Running (check): ${CMD3[*]}"
-"${CMD3[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/thingsSplit_s01_${SLURM_JOB_ID}.check.log"
+# ------------ STEP 3: Sanity check (optional) ---------------------------------
+if [[ -f "$CHECK_PY" ]]; then
+  CMD3=( python -u "$CHECK_PY"
+    --stimulus_tsv "$STIM_TSV_OUT"
+    --out_dir      "$OUTDIR"
+    --id_col       "$IDCOL"
+    --n_test       "$N_TEST"
+    --x_path       "$X_PATH"
+  )
+  echo "Running (check): ${CMD3[*]}"
+  "${CMD3[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/thingsSplit800_s01_${SLURM_JOB_ID}.check.log"
+else
+  echo "[WARN] $CHECK_PY not found; skipping checks."
+fi
 
 echo "==== Job finished at $(date) ===="

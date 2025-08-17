@@ -24,7 +24,7 @@ import sklearn.linear_model as skl
 # ------------------ args ------------------
 ap = argparse.ArgumentParser(description='Ridge regression: fMRI -> VDVAE latents (THINGS).')
 ap.add_argument("-sub", "--sub", type=int, default=1, help="Subject number (e.g., 1)")
-ap.add_argument("--alpha", type=float, default=50000, help="Ridge alpha (default 50k)")
+ap.add_argument("--alpha", type=float, default=70000, help="Ridge alpha (default 50k)")
 ap.add_argument("--features_npz",
                 help="Path to NPZ with train_latents/test_latents (VDVAE).")
 ap.add_argument("--train_fmri",
@@ -91,7 +91,7 @@ print("test_fmri  max/min:", float(np.max(test_fmri)),  float(np.min(test_fmri))
 
 # ------------------ ridge regression ------------------
 print("Training Ridge regressor (fMRI -> VDVAE latents)...")
-reg = skl.Ridge(alpha=args.alpha, max_iter=10000, fit_intercept=True)
+reg = skl.Ridge(alpha=args.alpha, max_iter=30000, fit_intercept=True)
 reg.fit(train_fmri, train_latents)
 
 pred_test_latent = reg.predict(test_fmri)

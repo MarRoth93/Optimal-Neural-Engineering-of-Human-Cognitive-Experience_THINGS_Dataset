@@ -21,7 +21,7 @@ PLOTS_DIR="/home/rothermm/THINGS/03_results/plots"
 
 # Choose alphas to match what you decoded.
 # For sigma-mode run:
-ALPHAS=(-1 -0.5 0 0.5 1)
+ALPHAS=(-4 -3 -2 -1 -0.5 0 0.5 1 2 3 4)
 # For raw-mode run, you might prefer:
 # ALPHAS=(-4 -3 -2 0 2 3 4)
 

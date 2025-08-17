@@ -25,7 +25,7 @@ export NUMEXPR_NUM_THREADS=${SLURM_CPUS_PER_TASK:-1}
 # --- config you can tweak ---
 SUBJ=1
 SUBJ_PAD=$(printf "%02d" $SUBJ)
-ALPHA=50000
+ALPHA=60000
 
 FEATURES_NPZ="/home/rothermm/THINGS/02_data/extracted_features/subj${SUBJ_PAD}/things_vdvae_features_31l.npz"
 TRAIN_FMRI="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/X_train.npy"

@@ -107,15 +107,15 @@ def main():
             "out": str(emo_out),
             "top_mean_score": emo_res["top_mean_score"],
             "bot_mean_score": mem_res["bot_mean_score"],
-            "top_idx_sample": emo_res["top_idx"][:10].tolist(),
-            "bot_idx_sample": emo_res["bot_idx"][:10].tolist(),
+            "top_idx_sample": emo_res["top_idx"][:20].tolist(),
+            "bot_idx_sample": emo_res["bot_idx"][:20].tolist(),
         },
         "memnet": {
             "out": str(mem_out),
             "top_mean_score": mem_res["top_mean_score"],
             "bot_mean_score": mem_res["bot_mean_score"],
-            "top_idx_sample": mem_res["top_idx"][:10].tolist(),
-            "bot_idx_sample": mem_res["bot_idx"][:10].tolist(),
+            "top_idx_sample": mem_res["top_idx"][:20].tolist(),
+            "bot_idx_sample": mem_res["bot_idx"][:20].tolist(),
         },
     }
     with open(args.out_dir / f"theta_summary_{tag}.json", "w") as f:
