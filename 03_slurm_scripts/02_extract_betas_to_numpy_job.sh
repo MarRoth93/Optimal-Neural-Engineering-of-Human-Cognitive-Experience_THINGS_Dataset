@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=thingsX_s01
+#SBATCH --job-name=02_extract_np
 #SBATCH --ntasks=1
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/02_thingsX_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/02_thingsX_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/02_extract_np_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/02_extract_np_s01_%j.err
 #SBATCH --time=02:00:00
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=64G

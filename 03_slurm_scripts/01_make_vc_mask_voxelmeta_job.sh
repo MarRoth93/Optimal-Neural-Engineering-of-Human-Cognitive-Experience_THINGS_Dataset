@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=vc_mask_s01
+#SBATCH --job-name=01_vc_mask
 #SBATCH --ntasks=1
 #SBATCH --output=logs/01_vc_mask_s01_%j.out
 #SBATCH --error=logs/01_vc_mask_s01_%j.err

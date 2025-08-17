@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=plotCaptions_s01
+#SBATCH --job-name=13_plotCaptions_s01
 #SBATCH --partition=normal
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2

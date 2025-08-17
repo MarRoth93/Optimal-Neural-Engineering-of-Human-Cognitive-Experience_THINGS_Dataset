@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=thingsH5_s01
+#SBATCH --job-name=03_h5_to_np
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G

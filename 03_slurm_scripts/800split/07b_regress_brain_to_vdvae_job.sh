@@ -1,19 +1,18 @@
 #!/bin/bash
-#SBATCH --job-name=07_vdvaeRidge_s01
+#SBATCH --job-name=vdvaeRidge800_s01
 #SBATCH --partition=normal
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
 #SBATCH --time=02:00:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge800_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge800_s01_%j.err
 
 set -euo pipefail
 
 echo "==== Job started on $(hostname) at $(date) ===="
 
-# Logs dir
 mkdir -p /home/rothermm/THINGS/01_scripts/logs
 
 # Use all allocated CPU threads in NumPy/MKL/BLAS
@@ -27,14 +26,13 @@ SUBJ=1
 SUBJ_PAD=$(printf "%02d" $SUBJ)
 ALPHA=50000
 
-FEATURES_NPZ="/home/rothermm/THINGS/02_data/extracted_features/subj${SUBJ_PAD}/things_vdvae_features_31l.npz"
-TRAIN_FMRI="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/X_train.npy"
-TEST_FMRI="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/X_test_avg.npy"
-OUT_PRED_DIR="/home/rothermm/THINGS/02_data/predicted_features/subj${SUBJ_PAD}"
-OUT_WEIGHTS_DIR="/home/rothermm/THINGS/02_data/regression_weights/subj${SUBJ_PAD}"
+FEATURES_NPZ="/home/rothermm/THINGS/02_data/extracted_features/subj${SUBJ_PAD}/800split/things_vdvae_features_31l.npz"
+TRAIN_FMRI="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/800split/X_train.npy"
+TEST_FMRI="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/800split/X_test_avg.npy"
+OUT_PRED_DIR="/home/rothermm/THINGS/02_data/predicted_features/subj${SUBJ_PAD}/800split"
+OUT_WEIGHTS_DIR="/home/rothermm/THINGS/02_data/regression_weights/subj${SUBJ_PAD}/800split"
 # ----------------------------
 
-# Conda env (same recipe that worked for you)
 module purge
 module load miniconda
 source "$CONDA_ROOT/bin/activate"
@@ -61,6 +59,6 @@ CMD=( python -u 07_regress_brain_to_vdvae.py
 )
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" | tee "/home/rothermm/THINGS/01_scripts/logs/07_vdvaeRidge800_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="

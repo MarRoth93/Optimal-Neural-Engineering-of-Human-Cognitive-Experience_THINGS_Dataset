@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=10_vdvaeAssess_s01
+#SBATCH --job-name=vdvaeAssess800_s01
 #SBATCH --partition=normal
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=00:30:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess800_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess800_s01_%j.err
 
 set -euo pipefail
 
@@ -17,13 +17,14 @@ mkdir -p /home/rothermm/THINGS/01_scripts/logs
 SUBJ=1
 SUBJ_PAD=$(printf "%02d" $SUBJ)
 
-TEST_PATHS="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/test_image_paths.txt"
-DECODED_DIR="/home/rothermm/THINGS/03_results/vdvae/subj${SUBJ_PAD}"
+TEST_PATHS="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/800split/test_image_paths.txt"
+DECODED_DIR="/home/rothermm/THINGS/03_results/vdvae/subj${SUBJ_PAD}/800split"
 ASSESSORS_ROOT="/home/rothermm/brain-diffuser/assessors"
-SCORES_DIR="/home/rothermm/THINGS/03_results/assessor_scores/subj${SUBJ_PAD}"
-PLOTS_DIR="/home/rothermm/THINGS/03_results/plots"
+SCORES_DIR="/home/rothermm/THINGS/03_results/assessor_scores/subj${SUBJ_PAD}/800split"
+PLOTS_DIR="/home/rothermm/THINGS/03_results/plots/800split"
+mkdir -p "$SCORES_DIR" "$PLOTS_DIR"
 
-# Conda env (your working method)
+# Conda env
 module purge
 module load miniconda
 source "$CONDA_ROOT/bin/activate"
@@ -45,9 +46,7 @@ CMD=( python -u 10_compute_assessor_scores.py
   --plots_dir "$PLOTS_DIR"
 )
 
-# change the run line to this (note 2>&1):
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess_s01_${SLURM_JOB_ID}.debug.log"
-
+"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/10_vdvaeAssess800_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="

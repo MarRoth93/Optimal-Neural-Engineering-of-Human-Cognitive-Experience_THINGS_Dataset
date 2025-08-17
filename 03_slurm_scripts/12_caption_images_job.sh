@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=captionTHINGS_s01
+#SBATCH --job-name=12_captionTHINGS_s01
 #SBATCH --partition=gpu
 #SBATCH --gpus=a100_80gb:1
 #SBATCH --cpus-per-task=4

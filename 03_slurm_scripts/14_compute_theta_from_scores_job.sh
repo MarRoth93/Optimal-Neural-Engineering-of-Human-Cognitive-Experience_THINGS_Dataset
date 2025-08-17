@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=thetaFromScores_s01
+#SBATCH --job-name=14_thetaFromScores_s01
 #SBATCH --partition=normal
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4

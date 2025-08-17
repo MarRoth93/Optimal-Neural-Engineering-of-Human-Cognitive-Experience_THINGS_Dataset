@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=09_vdvaeCompare_s01
+#SBATCH --job-name=vdvaeCompare800_s01
 #SBATCH --partition=normal
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=4G
 #SBATCH --time=00:10:00
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/09_vdvaeCompare_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/09_vdvaeCompare_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/09_vdvaeCompare800_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/09_vdvaeCompare800_s01_%j.err
 
 set -euo pipefail
 
@@ -16,13 +16,16 @@ mkdir -p /home/rothermm/THINGS/01_scripts/logs
 
 SUBJ=1
 SUBJ_PAD=$(printf "%02d" $SUBJ)
-TEST_PATHS="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/test_image_paths.txt"
-DECODED_DIR="/home/rothermm/THINGS/03_results/vdvae/subj${SUBJ_PAD}"
-OUT_PNG="/home/rothermm/THINGS/03_results/plots/compare_first10.png"
+TEST_PATHS="/home/rothermm/THINGS/02_data/preprocessed_data/subj${SUBJ_PAD}/800split/test_image_paths.txt"
+DECODED_DIR="/home/rothermm/THINGS/03_results/vdvae/subj${SUBJ_PAD}/800split"
+OUT_PNG="/home/rothermm/THINGS/03_results/plots/800split/compare_first10_sub${SUBJ_PAD}.png"
 N=10
 IMG_SIZE=256
 
-# Conda env (your working method)
+# ensure plot folder exists
+mkdir -p "$(dirname "$OUT_PNG")"
+
+# Conda env
 module purge
 module load miniconda
 source "$CONDA_ROOT/bin/activate"
@@ -44,6 +47,6 @@ CMD=( python -u 09_compare_original_vs_decoded.py
 )
 
 echo "Running: ${CMD[*]}"
-"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/09_vdvaeCompare_s01_${SLURM_JOB_ID}.debug.log"
+"${CMD[@]}" 2>&1 | tee "/home/rothermm/THINGS/01_scripts/logs/09_vdvaeCompare800_s01_${SLURM_JOB_ID}.debug.log"
 
 echo "==== Job finished at $(date) ===="

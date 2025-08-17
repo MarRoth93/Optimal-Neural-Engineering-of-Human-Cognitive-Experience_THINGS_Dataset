@@ -21,7 +21,17 @@ ORDER=(
   "02_extract_betas_to_numpy_job.sh"
   "03_extract_h5_to_numpy_v2_job.sh"
   "04_split_and_average_things_job.sh"
-  "04b_split_and_average_things_800_job.sh"
+  "05_map_ids_to_paths_job.sh"
+  "06_extract_vdvae_features_job.sh"
+  "07_regress_brain_to_vdvae_job.sh"
+  "08_decode_vdvae_from_pred_job.sh"
+  "09_compare_original_vs_decoded_job.sh"
+  "10_compute_assessor_scores_job.sh"
+  "11_visualize_first_stim_activation_job.sh"
+  "14_compute_theta_from_scores_job.sh"
+  "15_shift_and_decode_vdvae_job.sh"
+  "16_plot_shifted_examples_job.sh"
+  "17_assessor_scores_theta_job.sh"
 )
 
 # Dependency mode: afterok (stop on failure) or afterany (continue even if a job fails)

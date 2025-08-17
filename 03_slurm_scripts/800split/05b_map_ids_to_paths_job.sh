@@ -1,26 +1,24 @@
 #!/bin/bash
-#SBATCH --job-name=05_MapPaths_s01
+#SBATCH --job-name=thingsMapPaths800_s01
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=2G
 #SBATCH --time=00:05:00
 #SBATCH --partition=normal
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/05_mapPaths_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/05_mapPaths_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/05_mapPaths800_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/05_mapPaths800_s01_%j.err
 
 set -euo pipefail
 
 echo "==== Job started on $(hostname) at $(date) ===="
 
-# NOTE: Slurm creates the log files before the script runs.
-# Make sure /home/rothermm/THINGS/01_scripts/logs exists ahead of time, or keep this line and submit once the dir exists.
 mkdir -p /home/rothermm/THINGS/01_scripts/logs
 
-OUTDIR="/home/rothermm/THINGS/02_data/preprocessed_data/subj01"
+OUTDIR="/home/rothermm/THINGS/02_data/preprocessed_data/subj01/800split"
 mkdir -p "$OUTDIR"
 
-# Conda env (same recipe that worked for you)
+# Conda env
 module purge
 module load miniconda
 source "$CONDA_ROOT/bin/activate"

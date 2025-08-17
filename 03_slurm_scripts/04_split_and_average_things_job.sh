@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=thingsSplit_s01
+#SBATCH --job-name=04_Split
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=8G
