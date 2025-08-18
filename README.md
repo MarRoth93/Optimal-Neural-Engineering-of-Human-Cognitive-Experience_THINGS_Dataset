@@ -15,6 +15,8 @@ This repository extends [MarRoth93/Optimal-Neural-Engineering-of-Human-Cognitive
 - `02_extract_betas_to_numpy.py` – Iterates over single‑trial beta NIfTIs, resamples the VC mask if necessary, extracts the masked voxel values into a memory‑mapped trial×voxel matrix, records basic metadata, and optionally checks the number of events.
 - `03_extract_h5_to_numpy_v2.py` – Selects visual‑cortex voxel IDs from metadata, indexes the large HDF5 response matrix to load only those rows, optionally z‑scores the time courses, and stores the resulting array together with index/voxel‑id sidecars.
 - `04_split_and_average_things.py` – Joins the voxel matrix with stimulus metadata, separates train and test trials by `trial_type`, averages repeated presentations in the test set (and optionally in train), and saves index files, ID lists, and a JSON summary.
+- `04b_split_and_average_things_800.py` – Guarantees all original test images stay in TEST and selects additional IDs until reaching a target number of unique test images.
+- `04c_check_split_and_outputs.py` – Runs integrity checks on the 800‑image split and derived arrays, verifying counts, index alignment, and optional trial totals.
 - `05_map_ids_to_paths.py` – Recursively indexes the image root, handles duplicate filenames, and translates lists of THINGS image IDs into absolute file paths for later feature extraction.
 - `06_extract_vdvae_features.py` – Loads a pretrained VDVAE, reads train/test image path lists, converts images to 64×64, and stacks hierarchical latent vectors for both splits along with a reference latent.
 - `07_regress_brain_to_vdvae.py` – Normalizes fMRI matrices, fits a ridge regression that predicts VDVAE latents from brain responses, outputs the predicted test latents, and stores the regression weights and normalization parameters.
@@ -26,7 +28,14 @@ This repository extends [MarRoth93/Optimal-Neural-Engineering-of-Human-Cognitive
 - `12_caption_images.py` – Batch‑generates captions for train and test image lists with BLIP or BLIP‑2, supports optional prompts and beam search, and writes TSV/JSONL/TXT files aligned with the image order with resume support.
 - `13_plot_test_captions.py` – Plots the first N test images with their BLIP‑2 captions by robustly matching paths and saves a composite figure.
 - `14_compute_theta_from_scores.py` – Contrasts top and bottom fractions of EmoNet and MemNet scores to form theta vectors in latent space and records summary statistics.
+- `14b_explore_theta.py` – Explores precomputed theta vectors, correlating latent projections with assessor scores and visualizing score changes across step sizes.
+- `14c_compute_theta_regression.py` – Fits ridge regressions from latents to assessor scores to derive normalized theta directions.
 - `15_shift_and_decode_vdvae.py` – Adds scaled theta vectors to predicted latents, decodes them with VDVAE, and writes the resulting shifted reconstructions.
+- `15b_evaluate_theta_sweep.py` – Re‑scores shifted decodes across alpha steps with EmoNet and MemNet, plotting score trends and saving example grids.
+- `15c_evaluate_assessor_scores.py` – Measures per‑image score slopes versus alpha and checks mean pixel changes to sanity‑check shifts.
+- `16_plot_shifted_examples.py` – Builds side‑by‑side panels of shifted reconstructions across alphas for both assessors.
+- `17_assessor_scores_theta.py` – Computes assessor scores for original images and all alpha shifts, storing structured results per assessor.
+- `18_compare_theta_results.py` – Generates scatter and summary plots comparing original scores to every alpha shift.
 
 ## Acknowledgments
 
