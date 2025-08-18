@@ -1,17 +1,17 @@
-Sun Aug 17 15:46:13 CEST 2025
+Sun Aug 17 16:23:16 CEST 2025
 Dependency mode: afterok
-01_make_vc_mask_voxelmeta_job.sh              7943188
-02_extract_betas_to_numpy_job.sh              7943189
-03_extract_h5_to_numpy_v2_job.sh              7943190
-04_split_and_average_things_job.sh            7943191
-05_map_ids_to_paths_job.sh                    7943192
-06_extract_vdvae_features_job.sh              7943193
-07_regress_brain_to_vdvae_job.sh              7943194
-08_decode_vdvae_from_pred_job.sh              7943195
-09_compare_original_vs_decoded_job.sh         7943196
-10_compute_assessor_scores_job.sh             7943197
-11_visualize_first_stim_activation_job.sh     7943198
-14_compute_theta_from_scores_job.sh           7943199
-15_shift_and_decode_vdvae_job.sh              7943200
-16_plot_shifted_examples_job.sh               7943201
-17_assessor_scores_theta_job.sh               7943202
+01_make_vc_mask_voxelmeta_job.sh                 7943209
+02_extract_betas_to_numpy_job.sh                 7943210
+03_extract_h5_to_numpy_v2_job.sh                 7943211
+800split/04b_split_and_average_things_800_job.sh 7943212
+800split/05b_map_ids_to_paths_job.sh             7943213
+800split/06b_extract_vdvae_features_job.sh       7943214
+800split/07b_regress_brain_to_vdvae_job.sh       7943215
+800split/08b_decode_vdvae_from_pred_job.sh       7943216
+800split/09b_compare_original_vs_decoded_job.sh  7943217
+800split/10b_compute_assessor_scores_job.sh      7943218
+800split/11b_visualize_first_stim_activation_job.sh 7943219
+800split/14b_compute_theta_from_scores_job.sh    7943220
+800split/15b_shift_and_decode_vdvae_job.sh       7943221
+800split/16b_plot_shifted_examples_job.sh        7943222
+800split/17b_assessor_scores_theta_job.sh        7943223

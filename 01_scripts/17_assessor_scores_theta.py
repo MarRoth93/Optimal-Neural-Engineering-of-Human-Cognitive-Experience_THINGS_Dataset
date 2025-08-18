@@ -1,39 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Compute assessor scores for original images and all shifted-decode alpha folders,
-and generate scatter plots: Original vs each alpha.
+17_assessor_scores_theta.py  (no per-alpha plots)
 
-Outputs (per assessor) two pickles in:
+Compute assessor scores for original images and all shifted-decode alpha folders,
+and save structured results (scores, means, stds, correlations) per assessor.
+
+Outputs (per assessor) one pickle in:
   /home/rothermm/THINGS/03_results/assessor_scores/subjXX/theta/
     - emonet_theta_scores_subXX.pkl
     - memnet_theta_scores_subXX.pkl
 
 Each pickle contains:
   - "scores": {"original", "alpha_{±a}"} -> score lists
-  - "means" / "stds": summary stats
+  - "means" / "stds": summary stats (float)
   - "correlations": {"alpha_{±a}": {"r": ..., "p": ...}}
-  - "scatter_paths": {"alpha_{±a}": "<png path>"}
-
-Plots go to:
-  /home/rothermm/THINGS/03_results/plots/subjXX/theta/{assessor}/
-    - {assessor}_scatter_original_vs_alpha_{±a}_subXX.png
+  - "paths": minimal provenance info
 
 Assumes shifted decodes are at:
   /home/rothermm/THINGS/03_results/vdvae_shifted/subjXX/{emonet|memnet}/alpha_{±a}/{i}.png
-
-Usage (subj01, auto-discover alphas):
-python scripts/analysis/compute_assessor_scores_shifted.py --sub 1
 """
 
-import os, re, sys, argparse, pickle
+import os
+import re
+import sys
+import argparse
+import pickle
 import numpy as np
 from pathlib import Path
 from PIL import Image
 import torch
 import torchvision.transforms as T
-import seaborn as sns
-import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
 
 # -------------------- utils --------------------
@@ -111,20 +108,6 @@ def load_assessors(assessors_root: Path, device: str):
     assessor_mem = MemNet().eval().requires_grad_(False).to(device)
     return assessor_emo, assessor_mem, mem_mean
 
-def scatter_with_regression(orig, dec, out_png: Path, title: str):
-    ensure_dir(out_png.parent)
-    r, p = pearsonr(orig, dec)
-    plt.figure(figsize=(5.5, 5))
-    sns.regplot(x=orig, y=dec, scatter_kws={"s": 20, "alpha": 0.7}, line_kws={"color": "red"})
-    plt.xlabel("Original scores")
-    plt.ylabel("Shifted decode scores")
-    plt.title(f"{title}\nPearson r = {r:.3f}, p = {p:.2e}", fontsize=12)
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(out_png, dpi=200)
-    plt.close()
-    return float(r), float(p)
-
 # -------------------- main --------------------
 
 def main():
@@ -137,8 +120,6 @@ def main():
     ap.add_argument("--assessors_root", type=Path, default=Path("/home/rothermm/brain-diffuser/assessors"))
     ap.add_argument("--out_dir", type=Path, default=None,
                     help="Pickle output dir (defaults to .../assessor_scores/subjXX/theta)")
-    ap.add_argument("--plots_dir", type=Path, default=None,
-                    help="Plots output dir (defaults to .../plots/subjXX/theta/{assessor})")
     ap.add_argument("--assessors", choices=["both", "emonet", "memnet"], default="both")
     ap.add_argument("--alphas", type=float, nargs="*", default=None,
                     help="If provided, only score these alphas; else auto-discover from folders")
@@ -183,11 +164,6 @@ def main():
     tfm_emo = build_transform(is_memnet=False)
     tfm_mem = build_transform(is_memnet=True, mem_mean=mem_mean)
 
-    # Base plots dir
-    default_plots_dir = Path(f"/home/rothermm/THINGS/03_results/plots/subj{sp}/theta")
-    plots_root = Path(args.plots_dir) if args.plots_dir is not None else default_plots_dir
-
-    # Helper to process one assessor family (emonet or memnet)
     def process_family(name: str, assessor, transform):
         base = args.shifted_root / name
         if not base.exists():
@@ -205,7 +181,7 @@ def main():
             except ValueError:
                 continue
 
-        # If user specified --alphas, filter; else use all discovered alphas
+        # Filter/sort alphas
         if args.alphas is not None and len(args.alphas) > 0:
             wanted = set(float(a) for a in args.alphas)
             alpha_items = sorted([(a, alpha_map[a]) for a in wanted], key=lambda x: x[0])
@@ -216,16 +192,13 @@ def main():
         print(f"[{name}] Scoring ORIGINAL images...")
         original_scores = score_image_batch(test_paths, assessor, transform, device=device, bs=args.batch_size)
 
-        # Score each alpha folder
+        # Prepare outputs
         series = {"original": original_scores}
         means  = {"original": float(np.mean(original_scores))}
         stds   = {"original": float(np.std(original_scores, ddof=1))}
         cors   = {}   # per-alpha r/p
-        figs   = {}   # per-alpha plot path
 
-        # plots dir per assessor
-        plots_dir = ensure_dir(plots_root / name)
-
+        # Score each alpha folder
         for a, d in alpha_items:
             print(f"[{name}] Scoring {d.name} ...")
             alpha_paths = expected_indexed_pngs(d, N)
@@ -235,13 +208,11 @@ def main():
             means[key] = float(np.mean(s))
             stds[key]  = float(np.std(s, ddof=1))
 
-            # Scatter: Original vs alpha_a
-            out_png = plots_dir / f"{name}_scatter_original_vs_{d.name}_sub{sp}.png"
-            r, p = scatter_with_regression(original_scores, s, out_png,
-                                           title=f"{name.capitalize()} — Original vs {d.name} (subj{sp})")
-            cors[key] = {"r": r, "p": p}
-            figs[key] = str(out_png)
+            # Correlation vs original (no plotting)
+            r, p = pearsonr(original_scores, s)
+            cors[key] = {"r": float(r), "p": float(p)}
 
+        # Persist results
         out = {
             "subject": int(args.sub),
             "assessor": name,
@@ -251,18 +222,15 @@ def main():
             "means": means,
             "stds": stds,
             "correlations": cors,
-            "scatter_paths": figs,
             "paths": {
                 "test_paths_file": str(args.test_paths),
                 "shifted_root": str(base),
-                "plots_dir": str(plots_dir),
             },
         }
         out_pkl = args.out_dir / f"{name}_theta_scores_sub{sp}.pkl"
         with open(out_pkl, "wb") as f:
             pickle.dump(out, f)
         print(f"[{name}] Saved -> {out_pkl}")
-        print(f"[{name}] Plots -> {plots_dir}")
 
     # Run selected assessors
     if args.assessors in ("both", "emonet"):

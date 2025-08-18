@@ -116,12 +116,14 @@ def main():
         pickle.dump({"original": emo_original, "decoded": emo_decoded}, f)
     print("[INFO] saved emonet scores.")
 
+    """
     plot_scores(
         emo_original, emo_decoded,
         args.plots_dir / f"emonet_original_vs_decoded_sub{sp}.png",
         f"EmoNet Scores — Original vs Decoded (subj{sp})"
     )
-    
+    """
+
     # Scatter plot for EmoNet
     scatter_with_regression(
         emo_original, emo_decoded,
@@ -137,12 +139,14 @@ def main():
         pickle.dump({"original": mem_original, "decoded": mem_decoded}, f)
     print("[INFO] saved memnet scores.")
 
+    """
     plot_scores(
         mem_original, mem_decoded,
         args.plots_dir / f"memnet_original_vs_decoded_sub{sp}.png",
         f"MemNet Scores — Original vs Decoded (subj{sp})"
     )
-
+    """
+    
     # Scatter plot for MemNet
     scatter_with_regression(
         mem_original, mem_decoded,
