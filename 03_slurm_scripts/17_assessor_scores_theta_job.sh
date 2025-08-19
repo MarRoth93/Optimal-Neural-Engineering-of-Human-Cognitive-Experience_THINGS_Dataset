@@ -46,7 +46,6 @@ CMD=( python -u 17_assessor_scores_theta.py
   --shifted_root "$SHIFTED_ROOT"
   --assessors_root "$ASSESSORS_ROOT"
   --out_dir "$SCORES_DIR"
-  --plots_dir "$PLOTS_DIR"
   --device auto
   --batch_size 96
 )

@@ -6,8 +6,8 @@
 #SBATCH --time=00:15:00
 #SBATCH --partition=normal
 #SBATCH --chdir=/home/rothermm/THINGS/01_scripts/
-#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/04_thingsSplit_s01_%j.out
-#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/04_thingsSplit_s01_%j.err
+#SBATCH --output=/home/rothermm/THINGS/01_scripts/logs/04_Split_s01_%j.out
+#SBATCH --error=/home/rothermm/THINGS/01_scripts/logs/04_Split_s01_%j.err
 
 echo "==== Job started on $(hostname) at $(date) ===="
 module purge
