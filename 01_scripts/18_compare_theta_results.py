@@ -39,6 +39,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import pearsonr
+from scipy.stats import linregress
+
 
 
 # ---------- IO ----------
@@ -58,6 +60,152 @@ def default_plot_dir_root() -> Path:
 
 
 # ---------- plotting helpers ----------
+
+
+def figure_alpha_effects_vs_alpha0(
+    data: dict,
+    assessor: str,
+    out_root: Path,
+    filename_stub: str,
+    limit: int = None,
+    use_sem: bool = True,
+) -> Path:
+    """
+    Plot how scores change vs alpha=0 and how many images exceed the alpha=0 mean.
+
+    Figure layout (2 rows):
+      (1) Δmean(α) = mean(score@α) − mean(score@α=0), with error bars and
+          separate linear fits (α<0 and α>0).
+      (2) Proportion above μ0 = mean(score@α=0):  mean( 1[ score@α > μ0 ] )
+          also with separate trend fits.
+
+    Saves:
+      {assessor}_theta_alpha_effects_vs_alpha0_{stub}.png
+    """
+    scores: Dict[str, List[float]] = data["scores"]
+
+    # --- collect alpha series ---
+    def is_alpha_key(k: str) -> bool:
+        return k.startswith("alpha_") or k == "alpha0"  # be tolerant
+
+    # map keys -> numeric alpha
+    alpha_pairs = []
+    for k in scores.keys():
+        if is_alpha_key(k):
+            if k == "alpha0":
+                aval = 0.0
+            else:
+                try:
+                    aval = float(k.split("alpha_")[1])
+                except Exception:
+                    continue
+            alpha_pairs.append((aval, k))
+    if not alpha_pairs:
+        raise ValueError("No alpha series found (alpha_* or alpha0).")
+
+    alpha_pairs.sort(key=lambda x: x[0])
+    alpha_vals = []
+    series = []
+    for aval, k in alpha_pairs:
+        arr = np.asarray(scores[k], dtype=np.float32)
+        if limit is not None:
+            arr = arr[:limit]
+        alpha_vals.append(aval)
+        series.append(arr)
+    alpha_vals = np.asarray(alpha_vals, dtype=np.float32)  # shape (A,)
+
+    # --- choose reference: α=0 preferred; fallback to 'original' ---
+    ref_idx = None
+    for i, a in enumerate(alpha_vals):
+        if np.isclose(a, 0.0):
+            ref_idx = i
+            break
+    used_original = False
+    if ref_idx is None:
+        if "original" not in scores:
+            raise ValueError("Neither alpha=0 nor 'original' found to use as reference.")
+        ref = np.asarray(scores["original"], dtype=np.float32)
+        if limit is not None:
+            ref = ref[:limit]
+        mu0 = float(np.mean(ref))
+        used_original = True
+    else:
+        mu0 = float(np.mean(series[ref_idx]))
+
+    # --- compute metrics across alphas ---
+    means = np.array([np.mean(s) for s in series], dtype=np.float32)
+    stds  = np.array([np.std(s, ddof=1) for s in series], dtype=np.float32)
+    ns    = np.array([len(s) for s in series], dtype=np.int32)
+    errs  = (stds / np.sqrt(ns)) if use_sem else stds
+
+    delta_means = means - mu0  # Δmean(α)
+
+    # proportion above μ0
+    prop_above = np.array([(s > mu0).mean() for s in series], dtype=np.float32)
+
+    # --- split negative vs positive alphas for simple trend tests ---
+    neg_mask = alpha_vals < 0
+    pos_mask = alpha_vals > 0
+
+    def safe_linreg(x, y):
+        if np.sum(~np.isnan(x)) >= 2 and np.unique(x).size >= 2:
+            r = linregress(x, y)
+            return r.slope, r.intercept, r.rvalue, r.pvalue
+        return np.nan, np.nan, np.nan, np.nan
+
+    # Δmean trends
+    slope_n_dm, b_n_dm, r_n_dm, p_n_dm = safe_linreg(alpha_vals[neg_mask], delta_means[neg_mask])
+    slope_p_dm, b_p_dm, r_p_dm, p_p_dm = safe_linreg(alpha_vals[pos_mask], delta_means[pos_mask])
+
+    # proportion trends
+    slope_n_pa, b_n_pa, r_n_pa, p_n_pa = safe_linreg(alpha_vals[neg_mask], prop_above[neg_mask])
+    slope_p_pa, b_p_pa, r_p_pa, p_p_pa = safe_linreg(alpha_vals[pos_mask], prop_above[pos_mask])
+
+    # --- plotting ---
+    setup_pub_style()
+    fig, axes = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+    ax1, ax2 = axes
+
+    # Row 1: Δmean
+    ax1.axhline(0.0, linestyle=":", linewidth=1, color="gray")
+    ax1.errorbar(alpha_vals, delta_means, yerr=errs, fmt="o-", lw=1.5, ms=4, capsize=3, label="Δmean(α)")
+    # overlay separate trend fits (neg & pos) for clarity
+    for mask, slope, b, lbl in [
+        (neg_mask, slope_n_dm, b_n_dm, f"trend α<0 (s={slope_n_dm:.3g}, p={p_n_dm:.2g})"),
+        (pos_mask, slope_p_dm, b_p_dm, f"trend α>0 (s={slope_p_dm:.3g}, p={p_p_dm:.2g})"),
+    ]:
+        if np.any(mask) and not np.isnan(slope):
+            xs = np.linspace(alpha_vals[mask].min(), alpha_vals[mask].max(), 100)
+            ax1.plot(xs, slope*xs + b, lw=1.2, label=lbl)
+    ax1.set_ylabel("Δmean score vs α=0")
+    ref_lab = "original" if used_original else "α=0"
+    subj = data.get("subject", None)
+    n_total = int(ns.max()) if ns.size else 0
+    ax1.set_title(f"{assessor.capitalize()} — Effects vs {ref_lab} (subj{subj:02d}, N≈{n_total})")
+
+    # Row 2: proportion above μ0
+    ax2.axhline(0.5, linestyle=":", linewidth=1, color="gray")
+    ax2.plot(alpha_vals, prop_above, "o-", lw=1.5, ms=4, label=f"P(score@α > μ_{ref_lab})")
+    for mask, slope, b, lbl in [
+        (neg_mask, slope_n_pa, b_n_pa, f"trend α<0 (s={slope_n_pa:.3g}, p={p_n_pa:.2g})"),
+        (pos_mask, slope_p_pa, b_p_pa, f"trend α>0 (s={slope_p_pa:.3g}, p={p_p_pa:.2g})"),
+    ]:
+        if np.any(mask) and not np.isnan(slope):
+            xs = np.linspace(alpha_vals[mask].min(), alpha_vals[mask].max(), 100)
+            ax2.plot(xs, slope*xs + b, lw=1.2, label=lbl)
+    ax2.set_xlabel("α")
+    ax2.set_ylabel(f"Proportion > μ_{ref_lab}")
+    ax2.set_ylim(-0.02, 1.02)
+
+    # Legends
+    ax1.legend(loc="best", frameon=True)
+    ax2.legend(loc="best", frameon=True)
+
+    fig.tight_layout()
+    out_path = out_root / f"{assessor}_theta_alpha_effects_vs_alpha0_{filename_stub}.png"
+    save_tight(fig, out_path, dpi=300)
+    return out_path
+
 
 def setup_pub_style():
     sns.set_context("talk", rc={
@@ -92,18 +240,30 @@ def ncols_nrows(n: int, max_cols: int = 4) -> Tuple[int, int]:
 def add_panel(ax, x: np.ndarray, y: np.ndarray, title: str, lims: Tuple[float, float]):
     # scatter
     ax.scatter(x, y, s=8, alpha=0.5, linewidths=0, rasterized=True)
-    # regression
+
+    # regression line
+    counts_str = ""
     if len(x) >= 2:
-        coeffs = np.polyfit(x, y, deg=1)
+        coeffs = np.polyfit(x, y, deg=1)  # slope, intercept
         xx = np.linspace(lims[0], lims[1], 200)
-        ax.plot(xx, coeffs[0]*xx + coeffs[1], linewidth=1.5)
+        yy = coeffs[0] * xx + coeffs[1]
+        ax.plot(xx, yy, linewidth=1.5, color="C0")
+
+        # --- count above/below regression line ---
+        y_pred = coeffs[0] * x + coeffs[1]
+        above = np.sum(y > y_pred)
+        below = np.sum(y < y_pred)
+        counts_str = f"\n↑ {above}, ↓ {below}"
+
     # y=x reference
-    ax.plot(lims, lims, linestyle=":", linewidth=1)
+    ax.plot(lims, lims, linestyle=":", linewidth=1, color="gray")
+
     ax.set_xlim(lims)
     ax.set_ylim(lims)
-    ax.set_title(title)
+    ax.set_title(title + counts_str)
     ax.set_xlabel("Original")
     ax.set_ylabel("Shifted")
+
 
 
 def save_tight(fig, path: Path, dpi: int = 300):
@@ -275,7 +435,20 @@ def main():
         )
         print(f"[{assessor}] Saved: {summ_path}")
 
+        print(f"[{assessor}] Building alpha effects vs alpha0 figure…")
+        eff_path = figure_alpha_effects_vs_alpha0(
+            data=data,
+            assessor=assessor,
+            out_root=out_root,
+            filename_stub=stub,
+            limit=args.limit,
+            use_sem=True,   # set False to show SD instead of SEM
+        )
+        print(f"[{assessor}] Saved: {eff_path}")
+        
     print("[DONE] All plots written to:", out_root)
+
+
 
 
 if __name__ == "__main__":
